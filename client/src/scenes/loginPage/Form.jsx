@@ -8,38 +8,48 @@ import {
   useTheme,
 } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
-import { Formik } from "formik";
-import * as yup from "yup";
+import { ErrorMessage, Field, Formik } from "formik";
+import * as Yup from "yup";
 import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { setLogin } from "state";
 import Dropzone from "react-dropzone";
 import FlexBetween from "components/FlexBetween";
 
-const registerSchema = yup.object().shape({
-  firstName: yup.string().required("required"),
-  lastName: yup.string().required("required"),
-  email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
-  // phoneNumber: yup.number().required("required"),
-  location: yup.string().required("required"),
-  occupation: yup.string().required("required"),
-  picture: yup.string().required("required"),
+const registerSchema = Yup.object().shape({
+  firstName: Yup.string().required("required"),
+  lastName: Yup.string().required("required"),
+  email: Yup.string().email("invalid email").required("required"),
+  location: Yup.string().required("required"),
+  occupation: Yup.string().required("required"),
+  phoneNumber: Yup.string()
+    .required("Required")
+    .matches(/^[0-9]+$/, "Must be only digits")
+    .min(11, "Must be exactly 11 digits")
+    .max(11, "Must be exactly 11 digits"),
+  password: Yup.string()
+    .min(6, "Password minimum length should be 6")
+    .required("Required"),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref("password")], "Password not matched")
+    .required("Required"),
+  picture: Yup.string().required("required"),
 });
 
-const loginSchema = yup.object().shape({
-  email: yup.string().email("invalid email").required("required"),
-  password: yup.string().required("required"),
+const loginSchema = Yup.object().shape({
+  email: Yup.string().email("invalid email").required("required"),
+  password: Yup.string().required("required"),
 });
 
 const initialValuesRegister = {
   firstName: "",
   lastName: "",
   email: "",
-  password: "",
-  // phoneNumber: "",
   location: "",
   occupation: "",
+  phoneNumber: "",
+  password: "",
+  confirmPassword: "",
   picture: "",
 };
 
@@ -81,9 +91,7 @@ const Form = () => {
   };
 
   const login = async (values, onSubmitProps) => {
-    const loggedInResponse = await fetch(
-       "http://localhost:8080/auth/login",  
-       {
+    const loggedInResponse = await fetch("http://localhost:8080/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(values),
@@ -91,7 +99,6 @@ const Form = () => {
     const loggedIn = await loggedInResponse.json();
     onSubmitProps.resetForm();
 
-    
     if (loggedIn) {
       dispatch(
         setLogin({
@@ -170,18 +177,6 @@ const Form = () => {
                   helperText={touched.location && errors.location}
                   sx={{ gridColumn: "span 4" }}
                 />
-                {/* <TextField
-                    autoComplete="off"
-                    label="Phone Number"
-                    type="number"
-                    onBlur={handleBlur}
-                    onChange={handleChange}
-                    value={values.phoneNumber}
-                    name="phone number"
-                    error={Boolean(touched.phoneNumber) && Boolean(errors.phoneNumber)}
-                    helperText={touched.phoneNumber && errors.phoneNumber}
-                    sx={{ gridColumn: "span 4" }}
-                  /> */}
                 <TextField
                   autoComplete="off"
                   label="Occupation"
@@ -195,6 +190,18 @@ const Form = () => {
                   helperText={touched.occupation && errors.occupation}
                   sx={{ gridColumn: "span 4" }}
                 />
+                <Field
+                  as={TextField}
+                  fullWidth
+                  name="phoneNumber"
+                  label="Phone Number"
+                  type="tel"
+                  // variant="standard"
+                  placeholder="Enter Your Phone Number"
+                  helperText={<ErrorMessage name="phoneNumber" />}
+                  sx={{ gridColumn: "span 4" }}
+                />
+
                 <Box
                   gridColumn="span 4"
                   border={`1px solid ${palette.neutral.medium}`}
@@ -243,7 +250,7 @@ const Form = () => {
               sx={{ gridColumn: "span 4" }}
             />
             <TextField
-              autoComplete='off'
+              autoComplete="off"
               label="Password"
               type="password"
               onBlur={handleBlur}
@@ -254,8 +261,21 @@ const Form = () => {
               helperText={touched.password && errors.password}
               sx={{ gridColumn: "span 4" }}
             />
-           
-             
+            <TextField
+              autoComplete="off"
+              label="Confirm Password"
+              type="password"
+              onBlur={handleBlur}
+              onChange={handleChange}
+              value={values.confirmPassword}
+              name="confirmPassword"
+              error={
+                Boolean(touched.confirmPassword) &&
+                Boolean(errors.confirmPassword)
+              }
+              helperText={<ErrorMessage name="confirmPassword" />}
+              sx={{ gridColumn: "span 4" }}
+            />
           </Box>
 
           {/* BUTTONS */}
@@ -268,7 +288,7 @@ const Form = () => {
                 p: "1rem",
                 backgroundColor: palette.primary.main,
                 color: palette.background.alt,
-                "&:hover": { 
+                "&:hover": {
                   color: palette.primary.light,
                   backgroundColor: palette.primary.dark,
                 },
@@ -287,7 +307,6 @@ const Form = () => {
                 "&:hover": {
                   cursor: "pointer",
                   color: palette.primary.dark,
-                  
                 },
               }}
             >

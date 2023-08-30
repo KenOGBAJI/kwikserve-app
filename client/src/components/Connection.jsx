@@ -19,7 +19,9 @@ const Connection = ({ connectionId, name, subtitle, userPicturePath }) => {
   const main = palette.neutral.main;
   const medium = palette.neutral.medium;
 
-  const isConnection = connections.find((connection) => connection._id === connectionId);
+  const isConnection = connections.find(
+    (connection) => connection._id === connectionId
+  );
 
   const patchConnection = async () => {
     const response = await fetch(

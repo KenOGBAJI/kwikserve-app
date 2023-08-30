@@ -1,4 +1,4 @@
-import  express  from "express";
+import express from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -26,50 +26,45 @@ dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(helmet());
-app.use(helmet.crossOriginResourcePolicy({policy: "cross-origin"}));
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json({ limit: "30mb", extended: true }));
-app.use(bodyParser.urlencoded({ limit: "30mb", extended: true}));
+app.use(bodyParser.urlencoded({ limit: "30mb", extended: true }));
 app.use(cors());
-app.use("/assets", express.static(path.join(__dirname, 'public/assets')));
-
+app.use("/assets", express.static(path.join(__dirname, "public/assets")));
 
 // file upload logic
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-     cb(null, "public/assets");
+    cb(null, "public/assets");
   },
-  filename: function (req, file, cb){
+  filename: function (req, file, cb) {
     cb(null, file.originalname);
-  }
+  },
 });
-const upload = multer({ storage }); 
-
+const upload = multer({ storage });
 
 // ROUTE WITH FILES--------
 app.post("/auth/register", upload.single("picture"), register);
 app.post("/posts", verifyToken, upload.single("picture"), createPost);
 
-
-
 // ROUTES ...
 app.use("/auth", authRoutes);
 app.use("/users", userRoutes);
-app.use("/posts", postRoutes); 
-
+app.use("/posts", postRoutes);
 
 const PORT = process.env.PORT || 3500;
 
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-  
-}).then(() => {
-  app.listen(PORT, () => console.log(`server Port: ${PORT}`));
+mongoose
+  .connect(process.env.MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => {
+    app.listen(PORT, () => console.log(`server Port: ${PORT}`));
 
-   /* ADD MOCK DATA MANUALLY ONE TIME TO DATABASE TO HLEP EDGE-CASES */
+    /* ADD MOCK DATA MANUALLY ONE TIME TO DATABASE TO HLEP EDGE-CASES */
     // User.insertMany(users);
     // Post.insertMany(posts);
-})
-.catch((error) => console.log(`${error} unable to connect to database`));
-
+  })
+  .catch((error) => console.log(`${error} unable to connect to database`));
